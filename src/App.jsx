@@ -18,30 +18,26 @@ function App() {
   const [selectedPost, setSelectedPost] = useState(null); // post ที่เลือกเพื่อดู detail
   const [showForm, setShowForm] = useState(false); // toggle แสดง/ซ่อน PostForm
 
-  // ── TODO 1: Fetch posts on mount ───────────────────────────────────────────
-  // ขั้นตอน:
-  //   1. setLoading(true) ก่อนเริ่ม fetch
-  //   2. fetch จาก https://jsonplaceholder.typicode.com/posts
-  //   3. ถ้า res.ok เป็น false → throw new Error (ใช้ template literal + res.status)
-  //   4. แปลง response เป็น JSON แล้ว setPosts(...)
-  //   5. catch: setIsError(error)
-  //   6. finally: setLoading(false)  ← ต้องอยู่ใน finally เสมอ ไม่ใช่แค่ใน try
   useEffect(() => {
     const fetchData = async () => {
-      // เขียนโค้ด fetch ที่นี่
+      try {
+        setLoading(true);
+        const res = await fetch('https://jsonplaceholder.typicode.com/posts');
+        if (!res.ok) throw new Error('HTTP' + res.status);
+        const result = await res.json();
+        setPosts(result);
+      } catch (error) {
+        setIsError(error.message);
+      } finally {
+        setLoading(false);
+      }
     };
     fetchData();
   }, []);
 
-  // ── TODO 2: Loading / Error guards ────────────────────────────────────────
-  // ถ้า loading เป็น true  → return <LoadingSpinner />
-  // ถ้า isError ไม่ใช่ null → return <ErrorMessage />
-
-  // ── Derived state (ห้ามใส่ใน useState) ────────────────────────────────────
-  // TODO 3: กรอง posts ตาม searchQuery (case-insensitive, เทียบจาก post.title)
-  // ชื่อตัวแปร: filteredPosts
-  // Hint: posts.filter((post) => post.title.toLowerCase().includes(...))
-  const filteredPosts = posts;
+  const filteredPosts = posts.filter((post) =>
+    post.title.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   // ── Event Handlers ─────────────────────────────────────────────────────────
 
@@ -49,19 +45,19 @@ function App() {
   // รับ string แล้ว setSearchQuery ด้วยค่านั้น
   // หมายเหตุ: SearchBar เรียก onChange(string) ไม่ใช่ onChange(event)
   const handleSearch = (query) => {
-    // เขียนโค้ดที่นี่
+    setSearchQuery(query);
   };
 
   // TODO 5: handleSelectPost(post)
   // รับ post object แล้วเก็บลง selectedPost state
   const handleSelectPost = (post) => {
-    // เขียนโค้ดที่นี่
+    setSelectedPost(post);
   };
 
   // TODO 6: handleCloseDetail()
   // reset selectedPost กลับเป็น null เพื่อปิด modal
   const handleCloseDetail = () => {
-    // เขียนโค้ดที่นี่
+    setSelectedPost(null);
   };
 
   // TODO 7: handleDelete(id)
@@ -71,7 +67,23 @@ function App() {
   //   2. อัปเดต posts state โดยกรองเอา post ที่มี id ตรงออก
   //      Hint: setPosts((prev) => prev.filter(...))
   const handleDelete = async (id) => {
-    // เขียนโค้ดที่นี่
+    try {
+      setLoading(true);
+      const res = await fetch(
+        `https://jsonplaceholder.typicode.com/posts/${id}`,
+        {
+          method: 'DELETE',
+        },
+      );
+      if (!res.ok) throw new Error('HTTP' + res.status);
+
+      const result = await res.json();
+      setPosts((prev) => prev.filter((post) => post.id !== id));
+    } catch (error) {
+      setIsError(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   // TODO 8: handleCreate(newPostData)
@@ -84,11 +96,29 @@ function App() {
   //      Hint: setPosts((prev) => [createdPost, ...prev])
   //   4. ปิด form: setShowForm(false)
   const handleCreate = async (newPostData) => {
-    // เขียนโค้ดที่นี่
+    try {
+      setLoading(true);
+      const res = await fetch(`https://jsonplaceholder.typicode.com/posts`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newPostData),
+      });
+      if (!res.ok) throw new Error('HTTP' + res.status);
+      const result = await res.json();
+      setPosts((prev) => [result, ...prev]);
+      setShowForm(false);
+    } catch (error) {
+      setIsError(error.message);
+    } finally {
+      setLoading(false);
+      setShowForm(false);
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {loading && <LoadingSpinner />}
+      {isError && <ErrorMessage />}
       <Header />
 
       <div className="flex">
@@ -116,7 +146,7 @@ function App() {
               - SearchBar รับ onChange เป็น function ที่รับ string (ไม่ใช่ event)
               - ใช้ handler ที่เขียนไว้ด้านบน */}
           <div className="mb-6">
-            <SearchBar value={searchQuery} onChange={/* TODO */ undefined} />
+            <SearchBar value={searchQuery} onChange={handleSearch} />
           </div>
 
           {/* TODO 10: ส่ง prop ให้ PostList ครบ
@@ -125,17 +155,22 @@ function App() {
               - onDelete: handler ที่ลบโพสต์ */}
           <PostList
             posts={filteredPosts}
-            onSelect={/* TODO */ undefined}
-            onDelete={/* TODO */ undefined}
+            onSelect={handleSelectPost}
+            onDelete={handleDelete}
           />
 
-          {/* TODO 11: แสดง PostDetail เฉพาะเมื่อ selectedPost ไม่ใช่ null
-              Hint: {selectedPost && <PostDetail ... />}
-              Props ที่ต้องส่ง: post, onClose */}
+          {/* TODO 11 */}
+          {selectedPost && (
+            <PostDetail post={selectedPost} onClose={handleCloseDetail} />
+          )}
 
-          {/* TODO 12: แสดง PostForm เฉพาะเมื่อ showForm เป็น true
-              Hint: {showForm && <PostForm ... />}
-              Props ที่ต้องส่ง: onSubmit, onCancel */}
+          {/* TODO 12 */}
+          {showForm && (
+            <PostForm
+              onSubmit={handleCreate}
+              onCancel={() => setShowForm(false)}
+            />
+          )}
         </main>
       </div>
     </div>

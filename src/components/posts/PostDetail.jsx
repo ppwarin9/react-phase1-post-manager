@@ -10,12 +10,9 @@ function PostDetail({ post, onClose }) {
     // Overlay backdrop
     <div
       className="fixed inset-0 z-20 flex items-end justify-center bg-black/40 sm:items-center p-4"
-      onClick={
-        // TODO: เรียก onClose เมื่อผู้ใช้คลิกที่ backdrop (พื้นหลังสีดำ) เท่านั้น
-        // Hint: ตรวจสอบว่า e.target === e.currentTarget ก่อนเรียก onClose
-        //       เพื่อกัน event ที่คลิกบน panel ด้านในไม่ให้ปิด modal
-        undefined
-      }
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       {/* Detail panel */}
       <div className="w-full max-w-lg rounded-2xl bg-white shadow-2xl">
@@ -27,7 +24,9 @@ function PostDetail({ post, onClose }) {
             </div>
             <div>
               <p className="text-xs text-gray-400">Post #{post.id}</p>
-              <p className="text-xs font-medium text-gray-600">User {post.userId}</p>
+              <p className="text-xs font-medium text-gray-600">
+                User {post.userId}
+              </p>
             </div>
           </div>
           <button

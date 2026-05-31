@@ -29,22 +29,16 @@ function PostCard({ post, onSelect, onDelete }) {
       {/* Actions */}
       <div className="flex items-center gap-2 border-t border-gray-100 pt-3">
         <button
-          onClick={
-            // TODO: เรียก onSelect พร้อมส่ง post object เข้าไป
-            // Hint: () => onSelect(post)
-            undefined
-          }
+          onClick={() => onSelect(post)}
           className="flex-1 rounded-lg bg-indigo-50 px-3 py-1.5 text-xs font-medium text-indigo-700 hover:bg-indigo-100 transition-colors"
         >
           View Details
         </button>
         <button
-          onClick={
-            // TODO: เรียก onDelete พร้อมส่ง post.id เข้าไป
-            // Hint: () => onDelete(post.id)
-            // สำคัญ: ต้องเรียก e.stopPropagation() ด้วย เพื่อกัน event ไม่ให้ bubble ขึ้นไปที่ card
-            undefined
-          }
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(post.id);
+          }}
           className="rounded-lg bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors"
         >
           Delete

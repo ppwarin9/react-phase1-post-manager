@@ -8,28 +8,23 @@ import PostCard from './PostCard';
 function PostList({ posts, onSelect, onDelete }) {
   // TODO: ถ้า posts array ว่างเปล่า ให้ return EmptyState UI ด้านล่าง
   // Hint: if (posts.length === 0) return <EmptyState />
-
+  if (posts.length === 0) return <EmptyState />;
   return (
     <>
       {/* จำนวนผลลัพธ์ */}
-      <p className="mb-4 text-sm text-gray-500">
-        {/* TODO: แสดงจำนวน post ที่กำลัง render อยู่ */}
-        {/* ตัวอย่าง: "Showing 12 posts" */}
-      </p>
+
+      <p className="mb-4 text-sm text-gray-500">Showing {posts.length} posts</p>
 
       {/* Grid ของ cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {/* TODO: loop ผ่าน posts แล้ว render PostCard ทีละตัว */}
-        {/* Hint:
-            posts.map((post) => (
-              <PostCard
-                key={post.id}
-                post={post}
-                onSelect={onSelect}
-                onDelete={onDelete}
-              />
-            ))
-        */}
+        {posts.map((post) => (
+          <PostCard
+            key={post.id}
+            post={post}
+            onSelect={onSelect}
+            onDelete={onDelete}
+          />
+        ))}
       </div>
     </>
   );
